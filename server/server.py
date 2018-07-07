@@ -35,12 +35,15 @@ def get_data(card):
             stock_string = store.find('div', {'class': 'e-col5'}).get_text()
             m = re.search('^([0-9]+)', stock_string)
             stock = int(m.group(1))
+            a = store.find('div', {'class': 'e-col1'}).a
             img = store.find('div', {'class': 'e-col1'}).a.img
             result.append({
-                "store": img['title'],
-                "logo": img['src'],
+                "store": a.img['title'],
+                "logo": a.img['src'],
+                "ref": a['href'],
                 "price": price,
-                "stock": stock
+                "stock": stock,
+                "quality": store.find('div', {'class': 'e-col4'}).get_text()
             })
             #print((store_string, price))
     except AttributeError as e:
