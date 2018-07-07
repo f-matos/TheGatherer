@@ -2,7 +2,7 @@
   <div>
       <textarea id="wanted" rows=20 cols="40" v-model="text">
       </textarea><br/>
-       <el-button type="success" @click="load">Load stores</el-button>
+       <el-button type="success" @click="load">Load</el-button>
   </div>
 
 </template>

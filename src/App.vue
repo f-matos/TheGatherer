@@ -1,12 +1,11 @@
 <template>
   <div id="app">
     <el-container>
-      <el-header height="4vh">Head</el-header>
       <el-main>
-      <div v-if="step === 0">
+      <div v-if="initial">
         <WantLoader></WantLoader>
       </div>
-      <div v-else-if="step === 1">
+      <div v-else>
         <div v-if="isLoadingCards">
           <Loading></Loading>
         </div>
@@ -22,12 +21,12 @@
               <CardList></CardList>
               </div>
             </el-col>
-            <el-col :span="8">
+            <el-col :span="9">
               <div style="max-height: 90vh;overflow-y:auto">
               <CartView></CartView>
               </div>
             </el-col>
-            <el-col :span="6">
+            <el-col :span="5">
               <div style="max-height: 90vh;overflow-y:auto">
                <WantList></WantList>
               </div>
@@ -59,8 +58,8 @@ import Loading from "./Loading.vue";
   }
 })
 export default class App extends Vue {
-  get step() {
-    return this.$store.state.step;
+  get initial() {
+    return this.$store.state.loadTotal == 0 && !this.isLoadingCards;
   }
 
   get isLoadingCards() {

@@ -6,7 +6,7 @@
         </div>
     <div v-for="card in cards" :key="card.name">
         <el-button class="card-button" @click="addCard(card)" >
-            {{ `${card.name} (${card.stock}) ${card.price}`  }}
+            {{ `${card.name} (${card.stock}) ${card.price} ${card.quality}` }}
         </el-button>
     </div>
 </div>
@@ -23,7 +23,12 @@ import { Card } from "./models";
 })
 export default class CardList extends Vue {
   get cards() {
-    return this.$store.state.selectedStore.cards;
+    let data: Array<Card> = [];
+    _.forIn(this.$store.state.selectedStore.cards, (card: Card) => {
+      const pos = _.sortedIndexBy(data, card, "name");
+      data.splice(pos, 0, card);
+    });
+    return data;
   }
 
   get store() {

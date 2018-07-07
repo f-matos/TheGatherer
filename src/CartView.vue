@@ -1,15 +1,14 @@
 <template>
     <div>
-       <el-tabs type="card" editable @tab-click="changeCart" @tab-add="addCart" @tab-remove="removeCart">
+       <el-tabs type="card" v-model="activeTab" editable @tab-add="addCart" @tab-remove="removeCart">
         <el-tab-pane
             v-for="(cart, id) in carts"
-            :value="activeTab"
             :key="id"
-            :name="`${id}`"
+            :name="`carttab${id}`"
             :label="cartText(cart)"
-        >
+        ></el-tab-pane>
             <el-table
-            :data="cartData(cart)"
+            :data="cartData"
             @row-click="rowClick">
             <el-table-column
                 prop="name"
@@ -37,19 +36,23 @@
             </el-table-column>
             </el-table>
             <div>
-                {{ cartText(cart) }}
+                {{ cartText() }}
              </div>
-    </el-tab-pane>
+
 </el-tabs>
     </div>
 </template>
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { Cart, CartItem, Card } from "./models";
+import _ from "lodash";
+import { Cart, Card, CartItem } from "./models";
 
 @Component
 export default class CartView extends Vue {
   cartText(cart: Cart) {
+    if (cart === undefined) {
+      cart = this.$store.state.selectedCart;
+    }
     let stores = new Set();
     let price = 0;
     let cards = 0;
@@ -67,35 +70,46 @@ export default class CartView extends Vue {
   }
 
   get activeTab() {
-    return `tab-${this.$store.state.carts.indexOf(
+    return `carttab${this.$store.state.carts.indexOf(
       this.$store.state.selectedCart
     )}`;
   }
 
-  cartData(cart: Cart) {
-    let data: Array<CartItem> = [];
-    for (const key in cart.items) {
-      data.push(cart.items[key]);
+  set activeTab(value: string) {
+    const match = /.*([0-9]+)$/.exec(value);
+    if (match != null) {
+      this.$store.mutations.selectCart(parseInt(match[1]));
     }
+  }
+
+  get cartData() {
+    const cart = this.$store.state.selectedCart;
+    let data: Array<CartItem> = [];
+    _.forIn(cart.items, (item: CartItem) => {
+      const pos = _.sortedIndexBy(data, item, "name");
+      data.splice(pos, 0, item);
+    });
     return data;
   }
 
-  rowClick(row: Card, event: any, column: any) {
+  rowClick(row: CartItem, event: any, column: any) {
     if (column.label === "Remove") {
-      this.$store.mutations.removeCardFromCart(row);
+      this.$store.mutations.removeItemFromCart(row);
+    }
+    if (column.label === "Store") {
+      window.open("https://www.ligamagic.com.br/" + row.referral, "_blank");
     }
   }
 
-  removeCart(id: number) {
-    this.$store.mutations.removeCart(id);
+  removeCart(id: string) {
+    const match = /.*([0-9]+)$/.exec(id);
+    if (match != null) {
+      this.$store.mutations.removeCart(parseInt(match[1]));
+    }
   }
 
   addCart() {
     this.$store.mutations.addCart();
-  }
-
-  changeCart(tab: any) {
-    this.$store.mutations.selectCart(this.$store.state.carts[tab.name]);
   }
 }
 </script>
