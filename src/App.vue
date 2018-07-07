@@ -1,42 +1,60 @@
 <template>
-  <div id="app">  
-    <el-card class="box-card">
-  <div slot="header" class="clearfix">
-    <div id="steps">
-      <el-steps :active="step" finish-status="success">
-        <el-step title="Wantlist"></el-step>
-        <el-step title="Stores"></el-step>
-        <el-step title="Card list"></el-step>
-      </el-steps>
-    </div>
-  </div>
-  <div v-if="step === 0">
-      <Wantlist></Wantlist>
-</div>
-<div v-else-if="step === 1">  
-  <div v-if="isLoadingCards">
-      <Loading></Loading>
-  </div>
-  <div v-else>
-    <StoreList></StoreList>
-    </div>
-  </div>    
-  <div v-else-if="step === 2">
-    C
-</div>
-</el-card>          
+  <div id="app">
+    <el-container>
+      <el-header height="4vh">Head</el-header>
+      <el-main>
+      <div v-if="step === 0">
+        <WantLoader></WantLoader>
+      </div>
+      <div v-else-if="step === 1">
+        <div v-if="isLoadingCards">
+          <Loading></Loading>
+        </div>
+        <div v-else>
+          <el-row>
+            <el-col :span="4">
+              <div style="max-height: 90vh;overflow-y:auto">
+              <StoreList></StoreList>
+              </div>
+            </el-col>
+            <el-col :span="6">
+              <div style="max-height: 90vh;overflow-y:auto">
+              <CardList></CardList>
+              </div>
+            </el-col>
+            <el-col :span="8">
+              <div style="max-height: 90vh;overflow-y:auto">
+              <CartView></CartView>
+              </div>
+            </el-col>
+            <el-col :span="6">
+              <div style="max-height: 90vh;overflow-y:auto">
+               <WantList></WantList>
+              </div>
+            </el-col>
+          </el-row>
+        </div>
+      </div>
+      </el-main>
+    </el-container>
   </div>
 </template>
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import Wantlist from "./Wantlist.vue";
+import { Component, Watch, Vue } from "vue-property-decorator";
+import WantLoader from "./WantLoader.vue";
+import WantList from "./WantList.vue";
 import StoreList from "./StoreList.vue";
+import CardList from "./CardList.vue";
+import CartView from "./CartView.vue";
 import Loading from "./Loading.vue";
 
 @Component({
   components: {
-    Wantlist,
+    WantLoader,
+    WantList,
     StoreList,
+    CardList,
+    CartView,
     Loading
   }
 })
@@ -46,8 +64,17 @@ export default class App extends Vue {
   }
 
   get isLoadingCards() {
-    console.log(this.$store.getters.isLoadingCards);
     return this.$store.getters.isLoadingCards;
+  }
+  created() {
+    this.$store.watch(state => state.lastError, this.onError);
+  }
+
+  onError(message: string) {
+    if (message != "") {
+      this.$message.error(message);
+      this.$store.mutations.lastErrorHandled();
+    }
   }
 }
 </script>

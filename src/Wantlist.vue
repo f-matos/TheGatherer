@@ -1,36 +1,34 @@
 <template>
-  <div id="wantlist">
-      <textarea id="wanted" rows=20 cols="40" v-model="text">
-      </textarea><br/>
-       <el-button type="success" @click="load">Load stores</el-button>
-  </div>
-  
+    <div>
+        <div>{{`Cards wanted: ${cardsWanted}`}}</div>
+        <div>
+        <el-card v-for="(quantity, name) in wantlist" shadow="never" :key="name"
+        v-bind:class="quantity == 0 ? 'bg-success' : ''">
+            {{`${name} --- ${quantity}`}}
+        </el-card>
+        </div>
+    </div>
 </template>
 <script lang="ts">
-import { Component, Emit, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 
 @Component
-export default class Wantlist extends Vue {
-  accept: number = 0;
-  text: string = "";
-
-  load() {
-    const names: Array<string> = [];
-    const lines = this.text.split("\n");
-    lines.forEach(line => {
-      if (line.length === 0) return;
-      const match = /([0-9]* )?([\wÀ-ú ]*)$/.exec(line);      
-      if (match != null && match[2] != "") {
-        names.push(match[2].trim());
-      } else {
-        this.$store.actions.addError(`What is "${line}"?`);
-      }
-    });
-    this.$store.actions.updateCards(names);
+export default class WantList extends Vue {
+  get wantlist() {
+    return this.$store.state.selectedCart.wantlist;
   }
 
-  get error() {
-    return this.$message.error(this.$store.state.lastError);
+  get cardsWanted() {
+    let counter = 0;
+    for (const k in this.$store.state.wantlist) {
+      counter += this.$store.state.wantlist[k];
+    }
+    return counter;
   }
 }
 </script>
+<style>
+.bg-success {
+  background-color: #13ce66;
+}
+</style>
