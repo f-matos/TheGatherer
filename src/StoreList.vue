@@ -9,62 +9,43 @@
             :value="shop.name">
           </el-option>
         </el-select>
-    <div v-for="store in filteredShops" :key="store.name">
-      <el-button @click="click(store)" v-bind:type="active(store)" class="store-button">
-        <StoreLogo :logo="store.logo"></StoreLogo>
-        {{ `${store.rating} | ${store.onCart}`}}
-      </el-button>
+    <div v-for="shop in filteredShops" :key="shop.name">
+      <StoreView shop="shop"></StoreView>
     </div>
   </div>
 </template>
 <script lang="ts">
 import { Component, Watch, Vue } from "vue-property-decorator";
 import _ from "lodash";
-import StoreLogo from "./StoreLogo.vue";
-import { Store } from "./models";
+import StoreView from "./components/StoreView.vue";
+import { Shop } from "./models/Shop";
 
 @Component({
-  components: { StoreLogo }
+  components: { StoreView }
 })
 export default class StoreList extends Vue {
   selectedShop: string = "";
 
-  active(store: Store) {
-    if (store === this.$store.state.selectedStore) {
-      return "primary";
-    } else {
-      return "";
-    }
-  }
-
   get filteredShops() {
     if (this.selectedShop != "") {
-      return [this.$store.state.stores[this.selectedShop]];
+      return [this.$store.state.shops[this.selectedShop]];
     }
-    let data: Array<Store> = [];
+    let data: Array<Shop> = [];
     let filter = this.$store.state.shopFilter;
-    if (filter === "") {
-      return this.$store.getters.sortedStores;
-    }
-    this.$store.getters.sortedStores.forEach((shop: Store) => {
+    this.$store.state.shops.forEach((shop: Shop) => {
+      const pos = _.sortedIndexBy(data, shop, "rating");
+      data.splice(pos, 0, shop);
+      /*
       if (filter in shop.cards) {
         data.push(shop);
       }
+      */
     });
     return data;
   }
 
   get shops() {
-    return _.values(this.$store.state.stores);
-  }
-
-  click(store: Store) {
-    this.$store.mutations.selectStore(store);
+    return _.values(this.$store.state.shops);
   }
 }
 </script>
-<style>
-.store-button {
-  width: 100%;
-}
-</style>

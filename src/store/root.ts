@@ -1,13 +1,20 @@
-import { BaseItem } from "./../models";
+//import { BaseItem } from "./../models";
 import _ from "lodash";
 import axios from "axios";
 import Vue from "vue";
 import { store, module, Getters, Mutations, Actions } from "sinai";
-import { Store, Card, Cart, CartItem } from "@/models";
+import { Shop, Card } from "./models/Shop";
+import Cart from "./models/Cart";
 
-// Declare the module state and its initial value
+// Declare the moimport Shop from '@/models/Shop';
+dule state and its initial value
 class RootState {
-  stores: { [key: string]: Store } = {};
+  shops: { [storeName: string]: Shop } = {};
+  currentShop!: Shop;
+
+  carts: Array<Cart> = [];
+  currentCart!: Cart;
+
   lastError: string = "";
   errors: Array<string> = [];
   loadDone = 0;
@@ -22,9 +29,9 @@ class RootState {
     rating: 0,
     onCart: 0
   };
-  carts: Array<Cart> = [
+  /*carts: Array<Cart> = [
     { wantlist: Object.assign({}, this.wantlist), items: {} }
-  ];
+  ];*/
   selectedCart: Cart = this.carts[0];
   bestPrice: { [cardname: string]: Store } = {};
 }
@@ -52,6 +59,18 @@ class RootMutations extends Mutations<RootState>() {
     } else {
       this.state.bestPrice[card.name] = this.state.stores[name];
     }
+  }
+
+  addShop(shopName: string, logo: string) {
+    Vue.set(this.state.shops, shopName, new Shop(shopName, logo));
+  }
+
+  addToWantlist(cardname: string, amount: number) {
+    Vue.set(this.state.wantlist, cardname, amount);
+  }
+
+  selectShop(shop: Shop) {
+    this.state.currentShop = shop;
   }
 
   lastErrorHandled() {
@@ -96,10 +115,7 @@ class RootMutations extends Mutations<RootState>() {
   }
 
   addCart() {
-    const newCart = {
-      wantlist: Object.assign({}, this.state.wantlist),
-      items: {}
-    };
+    const newCart = new Cart();
     this.state.carts.push(newCart);
     this.state.selectedCart = newCart;
   }
@@ -190,47 +206,39 @@ class RootGetters extends Getters<RootState>() {
 
 // Declare actions
 class RootActions extends Actions<RootState, RootGetters, RootMutations>() {
-  async updateWantlist(cards: { [cardname: string]: number }, count: number) {
+
+  async loadCards(cards: { [cardname: string]: number }, count: number) {
     this.mutations.resetLoadDone();
     this.mutations.setLoadTotal(count);
-    let newWantlist: { [cardname: string]: number } = {};
-    for (const card in cards) {
-      if (card in this.state.wantlist) {
-        this.mutations.incLoadDone();
-        newWantlist[card] = cards[card];
-      } else {
-        const shopCount = await this.loadCard(card);
-        if (shopCount > 0) {
-          newWantlist[card] = cards[card];
-        }
-      }
+    for (const cardname in cards) {
+      this.loadCard(cardname);
+      this.mutations.addToWantlist(cardname, count);
     }
-    this.mutations.setWantlist(newWantlist);
   }
 
-  private async loadCard(card: string) {
+  private async loadCard(cardname: string) {
     const result: Array<Store> = [];
     let shopCount = 0;
     try {
-      const data: Array<any> = (await axios.get("/api/" + card)).data;
-      shopCount = data.length;
+      const response: Array<any> = (await axios.get("/api/" + cardname)).data;
+      shopCount = response.length;
       if (shopCount == 0) {
-        this.mutations.addError(`Card "${card}" not found`);
+        this.mutations.addError(`Card "${cardname}" not found`);
       }
-      data.forEach(store => {
-        this.mutations.addCardToStore(store["store"], store["logo"], {
-          name: card,
-          price: store["price"],
-          stock: store["stock"],
-          referral: store["ref"],
-          quality: store["quality"]
-        });
+      response.forEach(data => {
+        if (!(data["store"] in this.state.shops)) {
+          this.mutations.addShop(data["store"], data["logo"])
+        }
+        const shop = this.state.shops[data["store"]];
+        const card = new Card(
+          name, data["stock"], data["price"],
+          data["quality"], data["ref"], false); //TODO foil
+        shop.addCard(card);
       });
     } catch (e) {
-      this.mutations.addError(`Failed adding card ${card}`);
+      this.mutations.addError(`Failed adding card ${cardname}. Is the server running?`);
     }
     this.mutations.incLoadDone();
-    return shopCount;
   }
 }
 
