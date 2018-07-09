@@ -14,6 +14,7 @@ export interface Store {
   logo: string;
   cards: { [cardname: string]: Card };
   rating: number;
+  onCart: number;
 }
 
 export interface Cart {
@@ -25,3 +26,11 @@ export interface CartItem extends BaseItem {
   store: string;
   quantity: number;
 }
+
+export let formatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  minimumFractionDigits: 2
+  // the default value for minimumFractionDigits depends on the currency
+  // and is usually already 2
+});

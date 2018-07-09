@@ -20,7 +20,7 @@ export default class WantLoader extends Vue {
     let count = 0;
     lines.forEach(line => {
       if (line.length === 0) return;
-      const match = /([0-9]*)? ?([\wÀ-ú\-, ]*)$/.exec(line);
+      const match = /([0-9]*)? ?([\wÀ-ú\-,`/' ]*)$/.exec(line);
       let quantity = 1;
       if (match != null) {
         if (match[1] != undefined) {
@@ -32,7 +32,9 @@ export default class WantLoader extends Vue {
         this.$store.mutations.addError(`What is "${line}"?`);
       }
     });
-    this.$store.actions.updateWantlist(wantlist, count);
+    this.$store.actions.updateWantlist(wantlist, count).then(() => {
+      this.$store.mutations.initRatings();
+    });
   }
 }
 </script>
