@@ -32,9 +32,7 @@ export default class WantLoader extends Vue {
         this.$store.mutations.addError(`What is "${line}"?`);
       }
     });
-    this.$store.actions.updateWantlist(wantlist, count).then(() => {
-      this.$store.mutations.initRatings();
-    });
+    this.$store.actions.loadCards(wantlist, count);
   }
 }
 </script>

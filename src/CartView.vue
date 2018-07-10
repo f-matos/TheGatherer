@@ -20,7 +20,7 @@
                 label="Store"
                 width="110">
                 <template slot-scope="scope">
-                        <StoreLogo :logo="scope.row.logo"></StoreLogo>
+                    <img :src="scope.row.logo" width="100px" height="30px" />
                     </template>
             </el-table-column>
             <el-table-column
@@ -48,28 +48,24 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import _ from "lodash";
-import StoreLogo from "./StoreLogo.vue";
-import { formatter } from "./models";
+import { formatter } from "@/models";
 import { Cart, Card, CartItem } from "./models";
 
-@Component({
-  components: { StoreLogo }
-})
+@Component
 export default class CartView extends Vue {
   cartText(cart: Cart) {
     if (cart === undefined) {
-      cart = this.$store.state.selectedCart;
+      cart = this.$store.state.currentCart;
     }
-    let stores = new Set();
+    let shops = new Set();
     let price = 0;
-    let cards = 0;
-    for (const key in cart.items) {
-      const item = cart.items[key];
-      stores.add(item.store);
-      price += item.price * item.quantity;
-      cards += item.quantity;
-    }
-    return `${stores.size} | ${cards} | ${formatter.format(price)}`;
+    let amount = 0;
+    _.forIn(cart.items, item => {
+      shops.add(item.card.shop);
+      price += item.price;
+      amount += item.amount;
+    });
+    return `${shops.size} | ${amount} | ${formatter.format(price)}`;
   }
 
   get carts() {
@@ -78,7 +74,7 @@ export default class CartView extends Vue {
 
   get activeTab() {
     return `carttab${this.$store.state.carts.indexOf(
-      this.$store.state.selectedCart
+      this.$store.state.currentCart
     )}`;
   }
 
@@ -90,13 +86,15 @@ export default class CartView extends Vue {
   }
 
   get cartData() {
-    const cart = this.$store.state.selectedCart;
+    const cart = this.$store.state.currentCart;
     let data: Array<CartItem> = [];
-    _.forIn(cart.items, (item: CartItem) => {
-      const logo = this.$store.state.stores[item.store].logo;
-      const price = formatter.format(item.price);
+    _.forIn(cart.items, item => {
+      const logo = item.card.shop.logo;
+      const price = item.card.money;
       const entry = Object.assign({}, item, { logo: logo, price: price });
-      const pos = _.sortedIndexBy(data, entry, "store");
+      const pos = _.sortedIndexBy(data, entry, o => {
+        return o.card.shop.name;
+      });
       data.splice(pos, 0, entry);
     });
     return data;
@@ -108,14 +106,16 @@ export default class CartView extends Vue {
       this.$store.mutations.removeItemFromCart(row);
     }
     if (column.label === "Store") {
-      window.open("https://www.ligamagic.com.br/" + row.referral, "_blank");
+      window.open(
+        "https://www.ligamagic.com.br/" + row.card.referral,
+        "_blank"
+      );
     }
   }
 
   openAll() {
-    _.forIn(this.$store.state.selectedCart.items, (item: CartItem) => {
-      const store = this.$store.state.stores[item.store];
-      const referral = store.cards[item.name].referral;
+    _.forIn(this.$store.state.currentCart.items, item => {
+      const referral = item.card.referral;
       window.open("https://www.ligamagic.com.br/" + referral, "_blank");
     });
   }

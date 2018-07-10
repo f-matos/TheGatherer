@@ -1,8 +1,8 @@
 <template>
-  <div @click="shopClick" :body-style="style">
-    <el-card shadow="hover">
-      <StoreLogo :logo="store.logo"></StoreLogo>
-      {{ `${shop.rating} | ${shop.onCart}`}}
+  <div @click="shopClick">
+    <el-card shadow="hover" :body-style="style">
+      <img :src="shop.logo" width="100px" height="30px" />
+      {{ `${shop.score} | ${shop.amountInCart}`}}
     </el-card>
   </div>
 </template>
@@ -10,23 +10,22 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import _ from "lodash";
 import StoreLogo from "./StoreLogo.vue";
-import { Shop } from "./models/Shop";
+import { Shop } from "@/models";
 
-@Component({
-  components: { StoreLogo }
-})
+@Component
 export default class ShopView extends Vue {
-    @Prop() shop!: Shop
+  @Prop() shop!: Shop;
 
-    get style(){
-      let bg: any = {cursor: "pointer"};
-      if(this.$store.state.currentShop === this.shop){
-        bg['background-color'] = 'bg-success';
-      }
-      return bg;
+  get style() {
+    let bg: any = { cursor: "pointer" };
+    if (this.$store.state.currentShop === this.shop) {
+      bg["background-color"] = "bg-success";
     }
+    return bg;
+  }
 
-    shopClick(){
-      this.$store.mutations.selectShop(this.shop);
-    }
+  shopClick() {
+    this.$store.mutations.selectShop(this.shop);
+  }
+}
 </script>

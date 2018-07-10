@@ -15,7 +15,7 @@
         v-bind:body-style="data.style">
         <div @click="setFilter(data.name)">
             {{`${data.name} --- ${data.quantity} --- ${data.bestPrice}`}}
-            <StoreLogo :logo="data.logo"></StoreLogo>
+            <img :src="data.logo" width="100px" height="30px" />
           </div>
         </el-card>
         </div>
@@ -23,26 +23,23 @@
 </template>
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import { formatter } from "@/models";
 import _ from "lodash";
-import { formatter } from "./models";
-import StoreLogo from "./StoreLogo.vue";
 
-@Component({
-  components: { StoreLogo }
-})
+@Component
 export default class WantList extends Vue {
   get wantlist() {
-    const wantlist = this.$store.state.selectedCart.wantlist;
+    const wantlist = this.$store.state.wantlist;
     const data: Array<any> = [];
     for (const cardname in wantlist) {
-      const store = this.$store.state.bestPrice[cardname];
+      const best = this.$store.state.bestShop[cardname];
       const bg = wantlist[cardname] === 0 ? "#13ce66" : "";
       let style = { cursor: "pointer", "background-color": bg };
       let entry = {
         name: cardname,
         quantity: wantlist[cardname],
-        bestPrice: formatter.format(store.cards[cardname].price),
-        logo: store.logo,
+        bestPrice: formatter.format(best.price),
+        logo: best.shop.logo,
         style: style
       };
       const pos = _.sortedIndexBy(data, entry, "name");

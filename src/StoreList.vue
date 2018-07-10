@@ -10,18 +10,18 @@
           </el-option>
         </el-select>
     <div v-for="shop in filteredShops" :key="shop.name">
-      <StoreView shop="shop"></StoreView>
+      <ShopView :shop="shop"></ShopView>
     </div>
   </div>
 </template>
 <script lang="ts">
 import { Component, Watch, Vue } from "vue-property-decorator";
 import _ from "lodash";
-import StoreView from "./components/StoreView.vue";
-import { Shop } from "./models/Shop";
+import ShopView from "./components/ShopView.vue";
+import { Shop } from "./models";
 
 @Component({
-  components: { StoreView }
+  components: { ShopView }
 })
 export default class StoreList extends Vue {
   selectedShop: string = "";
@@ -32,16 +32,20 @@ export default class StoreList extends Vue {
     }
     let data: Array<Shop> = [];
     let filter = this.$store.state.shopFilter;
-    this.$store.state.shops.forEach((shop: Shop) => {
+    /*
+    _.forIn(this.$store.state.shops, (shop: Shop) => {
       const pos = _.sortedIndexBy(data, shop, "rating");
       data.splice(pos, 0, shop);
-      /*
       if (filter in shop.cards) {
         data.push(shop);
       }
-      */
-    });
-    return data;
+
+    });*/
+    return _.orderBy(
+      this.$store.state.shops,
+      ["rating", "name"],
+      ["desc", "asc"]
+    );
   }
 
   get shops() {
