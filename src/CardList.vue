@@ -31,7 +31,6 @@ export default class CardList extends Vue {
   }
 
   addCard(card: Card) {
-    console.log(card);
     this.$store.mutations.addItemToCart(card);
   }
 

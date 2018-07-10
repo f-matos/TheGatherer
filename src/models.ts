@@ -11,12 +11,30 @@ export let formatter = new Intl.NumberFormat("pt-BR", {
 });
 
 export class CartItem {
-  card: Card;
+  id: string;
+  cardname: string;
   shops: { [shopname: string]: number } = {};
 
-  constructor(card: Card) {
-    this.card = card;
+  constructor(id: string, cardname: string) {
+    this.id = id;
+    this.cardname = cardname;
   }
+
+  decrease(shopname: string, amount: number) {
+    if (this.shops[shopname] <= amount) {
+      Vue.delete(this.shops, shopname);
+    } else {
+      this.shops[shopname] -= amount;
+    }
+  }
+
+  increase(shopname: string, amount: number) {
+    if (!(shopname in this.shops)) {
+      Vue.set(this.shops, shopname, 0);
+    }
+    this.shops[shopname] += amount;
+  }
+
 
   get amount() {
     let total = 0;
@@ -29,9 +47,13 @@ export class CartItem {
   get price() {
     let total = 0;
     _.forIn(this.shops, (amount, shopname) => {
-      total += store.state.shops[shopname].cards[this.card.id].price * amount;
+      total += store.state.shops[shopname].cards[this.id].price * amount;
     });
     return total;
+  }
+
+  get money() {
+    return formatter.format(this.price);
   }
 }
 
@@ -39,18 +61,18 @@ export class Cart {
   items: { [cardId: string]: CartItem } = {};
 
   addItem(card: Card, amount: number) {
-    if (!(card.id in this.items)) {
-      Vue.set(this.items, card.id, new CartItem(card));
+    if (!(card.name in this.items)) {
+      Vue.set(this.items, card.id, new CartItem(card.id, card.name));
     }
-    const item = this.items[card.id];
-    if (!(card.shop.name in item.shops)) {
-      Vue.set(item.shops, card.shop.name, 0);
-    }
-    item.shops[card.shop.name] += amount;
+    this.items[card.id].increase(card.shop.name, amount);
   }
 
   removeItem(card: Card, amount: number) {
-    this.items[card.name].shops[card.shop.name] -= amount;
+    const item = this.items[card.id];
+    item.decrease(card.shop.name, amount);
+    if (_.size(item.shops) == 0) {
+      Vue.delete(this.items, item.id);
+    }
   }
 }
 
@@ -82,7 +104,7 @@ export class Card {
   }
 
   get id() {
-    return `${this.name}|${this.shop.name}|${this.quality}`;
+    return `${this.name}|${this.quality}`;
   }
 
   get money() {
@@ -101,16 +123,25 @@ export class Shop {
   }
 
   get score() {
-    let result = 0;
+    let results: { [cardname: string]: number } = {};
     const wantlist = store.state.wantlist;
+
     _.forIn(this.cards, card => {
-      if (card.stock > wantlist[card.name]) {
-        result += wantlist[card.name];
+      if (!(card.name in results)) {
+        results[card.name] = 0;
+      }
+      let partialScore = results[card.name] + card.stock;
+      if (partialScore > wantlist[card.name]) {
+        results[card.name] = wantlist[card.name];
       } else {
-        result += card.stock;
+        results[card.name] = partialScore;
       }
     });
-    return result;
+    let total = 0;
+    _.forIn(results, value => {
+      total += value;
+    })
+    return total;
   }
 
   get amountInCart() {
@@ -118,7 +149,9 @@ export class Shop {
     const cart: Cart = store.state.currentCart;
     if (cart != null) {
       _.forIn(cart.items, (item: CartItem) => {
-        result += item.amount;
+        if (this.name in item.shops) {
+          result += item.shops[this.name];
+        }
       });
     }
     return result;

@@ -14,7 +14,7 @@
         <el-card v-for="data in wantlist" shadow="never" :key="data.name"
         v-bind:body-style="data.style">
         <div @click="setFilter(data.name)">
-            {{`${data.name} --- ${data.quantity} --- ${data.bestPrice}`}}
+            {{`${data.name} | ${data.amount} | ${data.bestPrice}`}}
             <img :src="data.logo" width="100px" height="30px" />
           </div>
         </el-card>
@@ -23,7 +23,7 @@
 </template>
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { formatter } from "@/models";
+import { formatter, Card } from "@/models";
 import _ from "lodash";
 
 @Component
@@ -37,7 +37,7 @@ export default class WantList extends Vue {
       let style = { cursor: "pointer", "background-color": bg };
       let entry = {
         name: cardname,
-        quantity: wantlist[cardname],
+        amount: this.amount(cardname),
         bestPrice: formatter.format(best.price),
         logo: best.shop.logo,
         style: style
@@ -46,6 +46,17 @@ export default class WantList extends Vue {
       data.splice(pos, 0, entry);
     }
     return data;
+  }
+
+  amount(cardname: string) {
+    let amount = this.$store.state.wantlist[cardname];
+    const cart = this.$store.state.currentCart;
+    _.forIn(cart.items, item => {
+      if (item.cardname === cardname) {
+        amount -= item.amount;
+      }
+    });
+    return amount;
   }
 
   get filter() {

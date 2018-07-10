@@ -12,7 +12,7 @@
             empty-text="Cart empty"
             @row-click="rowClick">
             <el-table-column
-                prop="name"
+                prop="card.name"
                 label="Name"
                 width="100">
             </el-table-column>
@@ -20,16 +20,16 @@
                 label="Store"
                 width="110">
                 <template slot-scope="scope">
-                    <img :src="scope.row.logo" width="100px" height="30px" />
+                    <img :src="scope.row.card.shop.logo" width="100px" height="30px" />
                     </template>
             </el-table-column>
             <el-table-column
-                prop="price"
+                prop="money"
                 label="Price">
             </el-table-column>
             <el-table-column
-                prop="quantity"
-                label="Quantity">
+                prop="amount"
+                label="Amount">
             </el-table-column>
             <el-table-column column-key="remove">
                 <template slot-scope="scope">
@@ -61,7 +61,9 @@ export default class CartView extends Vue {
     let price = 0;
     let amount = 0;
     _.forIn(cart.items, item => {
-      shops.add(item.card.shop);
+      _.forIn(item.shops, (_, shopname) => {
+        shops.add(shopname);
+      });
       price += item.price;
       amount += item.amount;
     });
@@ -87,23 +89,30 @@ export default class CartView extends Vue {
 
   get cartData() {
     const cart = this.$store.state.currentCart;
-    let data: Array<CartItem> = [];
+    let data: Array<any> = [];
     _.forIn(cart.items, item => {
-      const logo = item.card.shop.logo;
-      const price = item.card.money;
-      const entry = Object.assign({}, item, { logo: logo, price: price });
-      const pos = _.sortedIndexBy(data, entry, o => {
-        return o.card.shop.name;
+      _.forIn(item.shops, (amount, shopname) => {
+        console.log(shopname);
+        const shop = this.$store.state.shops[shopname];
+        const card = shop.cards[item.id];
+        console.log(card);
+        let row = {
+          card: card,
+          money: formatter.format(amount * card.price),
+          amount: amount
+        };
+        const pos = _.sortedIndexBy(data, row, o => {
+          return o.card.shop.name;
+        });
+        data.splice(pos, 0, row);
       });
-      data.splice(pos, 0, entry);
     });
     return data;
   }
 
-  rowClick(row: CartItem, event: any, column: any) {
-    console.log(column);
+  rowClick(row: any, event: any, column: any) {
     if (column.columnKey === "remove") {
-      this.$store.mutations.removeItemFromCart(row);
+      this.$store.mutations.removeItemFromCart(row.card);
     }
     if (column.label === "Store") {
       window.open(
@@ -115,8 +124,11 @@ export default class CartView extends Vue {
 
   openAll() {
     _.forIn(this.$store.state.currentCart.items, item => {
-      const referral = item.card.referral;
-      window.open("https://www.ligamagic.com.br/" + referral, "_blank");
+      _.forIn(item.shops, (_, shopname) => {
+        const shop = this.$store.state.shops[shopname];
+        const referral = shop.cards[item.id].referral;
+        window.open("https://www.ligamagic.com.br/" + referral, "_blank");
+      });
     });
   }
 

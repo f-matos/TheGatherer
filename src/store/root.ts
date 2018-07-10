@@ -1,9 +1,9 @@
-//import { BaseItem } from "./../models";
 import _ from "lodash";
 import axios from "axios";
 import Vue from "vue";
 import { store, module, Getters, Mutations, Actions } from "sinai";
 import { Shop, Card, Cart, CartItem } from "@/models";
+
 
 // Declare the moimport Shop from '@/models/Shop';
 //dule state and its initial value
@@ -55,7 +55,7 @@ class RootMutations extends Mutations<RootState>() {
   }
 
   selectShop(shop: Shop) {
-    this.state.currentShop = shop;
+    Vue.set(this.state, "currentShop", shop);
   }
 
   lastErrorHandled() {
@@ -112,7 +112,7 @@ class RootMutations extends Mutations<RootState>() {
         this.addError("You dont need more of this card");
         return;
       }
-      if (cart.items[card.id].shops[shop.name] == card.stock) {
+      if (cart.items[card.id].shops[shop.name] == shop.cards[card.id].stock) {
         this.addError("Store out of stock;");
         return;
       }
@@ -120,8 +120,8 @@ class RootMutations extends Mutations<RootState>() {
     cart.addItem(card, 1);
   }
 
-  removeItemFromCart(item: CartItem) {
-    this.state.currentCart.removeItem(item.card, 1);
+  removeItemFromCart(card: Card) {
+    this.state.currentCart.removeItem(card, 1);
   }
 }
 
@@ -136,10 +136,10 @@ class RootActions extends Actions<RootState, RootGetters, RootMutations>() {
   async loadCards(cards: { [cardname: string]: number }, count: number) {
     this.mutations.resetLoadDone();
     this.mutations.setLoadTotal(count);
-    for (const cardname in cards) {
+    _.forIn(cards, (amount, cardname) => {
       this.loadCard(cardname);
-      this.mutations.addToWantlist(cardname, count);
-    }
+      this.mutations.addToWantlist(cardname, amount);
+    });
     this.mutations.addCart();
   }
 
