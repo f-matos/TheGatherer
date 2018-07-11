@@ -5,6 +5,7 @@ import sys
 import shutil
 import tempfile
 import os
+import json
 import urllib.request
 from urllib.parse import quote
 from flask import Flask, request, jsonify, send_from_directory
@@ -29,7 +30,8 @@ def get_data(card):
         soup = BeautifulSoup(html, "html.parser")
     result = []
     try:
-        stores = soup.find('div', {'id': 'aba-cards'}).find_all('div', {'mp': '2'})
+        stores = soup.find('div', {'id': 'aba-cards'}
+                           ).find_all('div', {'mp': '2'})
         for store in stores:
             price_string = store.find(
                 'div', {'class': 'e-col3'}).get_text()
@@ -54,13 +56,20 @@ def get_data(card):
     return result
 
 
+with open("data.json") as f:
+    offline = json.loads(f.read())
+
+
 @app.route('/api/<card>', methods=['GET'])
 def req_card(card):
-    return jsonify(get_data(card))
+    return jsonify(offline[card])
+    # return jsonify(get_data(card))
+
 
 @app.route('/')
 def home():
-   return send_from_directory('public', 'index.html')
+    return send_from_directory('public', 'index.html')
+
 
 @app.route('/<path:path>')
 def send_raw(path):
@@ -69,6 +78,6 @@ def send_raw(path):
 
 if __name__ == "__main__":
     #url = "http://{}:{}".format(os.getenv('FLASK_RUN_HOST'), os.getenv('FLASK_RUN_PORT'))
-    #webbrowser.open(url)
+    # webbrowser.open(url)
     #app.run(host=os.getenv('FLASK_RUN_HOST'), port=os.getenv('FLASK_RUN_PORT'))
     app.run()

@@ -1,0 +1,56 @@
+{
+    "CardA": [
+        {
+            "store": "Shop 1",
+            "logo": "/1.jpg",
+            "ref": "out1",
+            "price": 0.99,
+            "stock": 5,
+            "quality": "N"
+        },
+        {
+            "store": "Shop 1",
+            "logo": "/1.jpg",
+            "ref": "out2",
+            "price": 5.9,
+            "stock": 2,
+            "quality": "MN"
+        },
+        {
+            "store": "Shop 2",
+            "logo": "/2.jpg",
+            "ref": "out4",
+            "price": 2.50,
+            "stock": 10,
+            "quality": "K"
+        }
+    ],
+    "CardB": [
+        {
+            "store": "Shop 4",
+            "logo": "/3.png",
+            "ref": "out1",
+            "price": 7.99,
+            "stock": 20,
+            "quality": "N"
+        }
+    ],
+    "CardC": [
+        {
+            "store": "Shop 1",
+            "logo": "/1.jpg",
+            "ref": "out1",
+            "price": 0.99,
+            "stock": 5,
+            "quality": "N"
+        },
+        {
+            "store": "Shop 4",
+            "logo": "/3.jpg",
+            "ref": "out6",
+            "price": 4.44,
+            "stock": 2,
+            "quality": "M"
+        }
+    ]
+}

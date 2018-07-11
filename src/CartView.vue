@@ -20,7 +20,7 @@
                 label="Store"
                 width="110">
                 <template slot-scope="scope">
-                    <img :src="scope.row.card.shop.logo" width="100px" height="30px" />
+                    <img :src="scope.row.shop.logo" width="100px" height="30px" />
                     </template>
             </el-table-column>
             <el-table-column
@@ -49,7 +49,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import _ from "lodash";
 import { formatter } from "@/models";
-import { Cart, Card, CartItem } from "./models";
+import { Cart, Card, CartCard } from "./models";
 
 @Component
 export default class CartView extends Vue {
@@ -60,14 +60,11 @@ export default class CartView extends Vue {
     let shops = new Set();
     let price = 0;
     let amount = 0;
-    _.forIn(cart.items, item => {
-      _.forIn(item.shops, (_, shopname) => {
-        shops.add(shopname);
-      });
-      price += item.price;
+    cart.items.forEach(item => {
+      shops.add(item.shop);
       amount += item.amount;
     });
-    return `${shops.size} | ${amount} | ${formatter.format(price)}`;
+    return `${shops.size} | ${amount} | ${cart.money}`;
   }
 
   get carts() {
@@ -89,30 +86,15 @@ export default class CartView extends Vue {
 
   get cartData() {
     const cart = this.$store.state.currentCart;
-    let data: Array<any> = [];
-    _.forIn(cart.items, item => {
-      _.forIn(item.shops, (amount, shopname) => {
-        console.log(shopname);
-        const shop = this.$store.state.shops[shopname];
-        const card = shop.cards[item.id];
-        console.log(card);
-        let row = {
-          card: card,
-          money: formatter.format(amount * card.price),
-          amount: amount
-        };
-        const pos = _.sortedIndexBy(data, row, o => {
-          return o.card.shop.name;
-        });
-        data.splice(pos, 0, row);
-      });
-    });
+    let data: Array<CartCard> = [];
+    data = cart.items.slice(0);
+    data.sort((a, b) => a.shop.name.localeCompare(b.shop.name));
     return data;
   }
 
-  rowClick(row: any, event: any, column: any) {
+  rowClick(row: CartCard, event: any, column: any) {
     if (column.columnKey === "remove") {
-      this.$store.mutations.removeItemFromCart(row.card);
+      this.$store.mutations.removeItemFromCart(row);
     }
     if (column.label === "Store") {
       window.open(
@@ -123,13 +105,12 @@ export default class CartView extends Vue {
   }
 
   openAll() {
-    _.forIn(this.$store.state.currentCart.items, item => {
-      _.forIn(item.shops, (_, shopname) => {
-        const shop = this.$store.state.shops[shopname];
-        const referral = shop.cards[item.id].referral;
-        window.open("https://www.ligamagic.com.br/" + referral, "_blank");
-      });
-    });
+    this.$store.state.currentCart.items.forEach(item =>
+      window.open(
+        "https://www.ligamagic.com.br/" + item.card.referral,
+        "_blank"
+      )
+    );
   }
 
   removeCart(id: string) {

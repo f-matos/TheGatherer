@@ -2,7 +2,9 @@
   <div @click="shopClick">
     <el-card shadow="hover" :body-style="style">
       <img :src="shop.logo" width="100px" height="30px" />
+      <div>
       {{ `${shop.score} | ${shop.amountInCart}`}}
+      </div>
     </el-card>
   </div>
 </template>
@@ -19,7 +21,7 @@ export default class ShopView extends Vue {
   get style() {
     let bg: any = { cursor: "pointer" };
     if (this.$store.state.currentShop === this.shop) {
-      bg["background-color"] = "bg-success";
+      bg["background-color"] = "#409EFF";
     }
     return bg;
   }

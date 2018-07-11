@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <el-container>
+    <el-container>      
       <el-main>
       <div v-if="initial">
         <WantLoader></WantLoader>
@@ -10,30 +10,38 @@
           <Loading></Loading>
         </div>
         <div v-else>
+          <el-header>
+            <FilterOptions></FilterOptions>
+          </el-header>
+          <el-main>
           <el-row>
             <el-col :span="4">
               <div style="max-height: 90vh;overflow-y:auto">
               <StoreList></StoreList>
               </div>
             </el-col>
-            <el-col :span="6">
+            <el-col :span="13">
               <div style="max-height: 90vh;overflow-y:auto">
               <CardList></CardList>
               </div>
             </el-col>
-            <el-col :span="9">
-              <div style="max-height: 90vh;overflow-y:auto">
-              <CartView></CartView>
-              </div>
-            </el-col>
-            <el-col :span="5">
+            <el-col :span="7">
               <div style="max-height: 90vh;overflow-y:auto">
                <WantList></WantList>
               </div>
             </el-col>
           </el-row>
+          <el-button class="cart-button" type="primary" icon="el-icon-star-off"
+          @click="cartDialogVisible=true" round></el-button>
+          </el-main>
         </div>
       </div>
+      <el-dialog title="Cart"
+      :visible.sync="cartDialogVisible"
+      width="50%"
+      center>
+      <CartView></CartView>
+      </el-dialog>
       </el-main>
     </el-container>
   </div>
@@ -41,6 +49,7 @@
 <script lang="ts">
 import { Component, Watch, Vue } from "vue-property-decorator";
 import WantLoader from "./WantLoader.vue";
+import FilterOptions from "./FilterOptions.vue";
 import WantList from "./WantList.vue";
 import StoreList from "./StoreList.vue";
 import CardList from "./CardList.vue";
@@ -50,6 +59,7 @@ import Loading from "./Loading.vue";
 @Component({
   components: {
     WantLoader,
+    FilterOptions,
     WantList,
     StoreList,
     CardList,
@@ -58,6 +68,8 @@ import Loading from "./Loading.vue";
   }
 })
 export default class App extends Vue {
+  cartDialogVisible = false;
+
   get initial() {
     return this.$store.state.loadTotal == 0 && !this.isLoadingCards;
   }
@@ -89,6 +101,12 @@ export default class App extends Vue {
 }
 #nav {
   padding: 30px;
+}
+
+.cart-button {
+  position: absolute;
+  bottom: 20px;
+  right: 50%;
 }
 
 #nav a {

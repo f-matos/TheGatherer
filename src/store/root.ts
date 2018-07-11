@@ -2,39 +2,54 @@ import _ from "lodash";
 import axios from "axios";
 import Vue from "vue";
 import { store, module, Getters, Mutations, Actions } from "sinai";
-import { Shop, Card, Cart, CartItem } from "@/models";
+import { Shop, Card, Cart, Wantlist, ShopCard, CartCard, WantlistCard } from "@/models";
 
 
 // Declare the moimport Shop from '@/models/Shop';
 //dule state and its initial value
 class RootState {
-  shops: { [storeName: string]: Shop } = {};
-  currentShop!: Shop;
+  shops: Array<Shop> = [];
+  currentShop: Shop = this.shops[0];
   carts: Array<Cart> = [];
   currentCart: Cart = this.carts[0];
 
   lastError: string = "";
   errors: Array<string> = [];
+
   loadDone = 0;
   loadTotal = 0;
-  step = 0;
-  wantlist: { [cardname: string]: number } = {};
+
+  filters: any = {
+    cardname: "",
+    shopname: "",
+    maxPrice: Infinity,
+    minPrice: 0
+  }
+
+  wantlist: Wantlist = { cards: [], missing: [] };
+
   shopFilter: string = "";
+
   bestShop: { [cardname: string]: { shop: Shop; price: number } } = {};
 }
 
 // Declare mutations
 class RootMutations extends Mutations<RootState>() {
   addShop(shopName: string, logo: string) {
-    Vue.set(this.state.shops, shopName, new Shop(shopName, logo));
+    const shop = new Shop(shopName, logo)
+    this.state.shops.push(shop);
+  }
+
+  resetWantlist() {
+    this.state.wantlist = new Wantlist();
   }
 
   addToWantlist(cardname: string, amount: number) {
-    Vue.set(this.state.wantlist, cardname, amount);
+    this.state.wantlist.cards.push(new WantlistCard(cardname, amount));
   }
 
-  addCardToShop(shop: Shop, card: Card) {
-    Vue.set(shop.cards, card.id, card);
+  addCardToShop(shop: Shop, card: Card, stock: number) {
+    shop.cards.push(new ShopCard(card, stock))
   }
 
   setBestPrice(cardname: string) {
@@ -42,8 +57,9 @@ class RootMutations extends Mutations<RootState>() {
       Vue.set(this.state.bestShop, cardname, { price: Infinity });
     }
     let bestShop = this.state.bestShop[cardname];
-    _.forIn(this.state.shops, (shop: Shop) => {
-      _.forIn(shop.cards, card => {
+    this.state.shops.forEach(shop => {
+      shop.cards.forEach(shopCard => {
+        const card = shopCard.card;
         if (card.name === cardname) {
           if (bestShop.price > card.price) {
             bestShop.shop = shop;
@@ -83,6 +99,30 @@ class RootMutations extends Mutations<RootState>() {
     this.state.currentCart = this.state.carts[index];
   }
 
+  setCardnameFilter(name: string) {
+    this.state.filters.cardname = name;
+  }
+
+  setShopnameFilter(name: string) {
+    this.state.filters.shopname = name;
+  }
+
+  setMaxPrice(value: number) {
+    if (_.isNaN(value)) {
+      this.state.filters.maxPrice = Infinity;
+    } else {
+      this.state.filters.maxPrice = value;
+    }
+  }
+
+  setMinPrice(value: number) {
+    if (_.isNaN(value)) {
+      this.state.filters.minPrice = 0;
+    } else {
+      this.state.filters.minPrice = value;
+    }
+  }
+
   setShopFilter(value: string) {
     this.state.shopFilter = value;
   }
@@ -107,21 +147,11 @@ class RootMutations extends Mutations<RootState>() {
   addItemToCart(card: Card) {
     const cart = this.state.currentCart;
     const shop = this.state.currentShop;
-    if (card.id in cart.items) {
-      if (cart.items[card.id].amount == this.state.wantlist[card.name]) {
-        this.addError("You dont need more of this card");
-        return;
-      }
-      if (cart.items[card.id].shops[shop.name] == shop.cards[card.id].stock) {
-        this.addError("Store out of stock;");
-        return;
-      }
-    }
-    cart.addItem(card, 1);
+    cart.addItem(card, shop, 1);
   }
 
-  removeItemFromCart(card: Card) {
-    this.state.currentCart.removeItem(card, 1);
+  removeItemFromCart(cartCard: CartCard) {
+    this.state.currentCart.removeItem(cartCard, 1);
   }
 }
 
@@ -134,6 +164,7 @@ class RootGetters extends Getters<RootState>() {
 // Declare actions
 class RootActions extends Actions<RootState, RootGetters, RootMutations>() {
   async loadCards(cards: { [cardname: string]: number }, count: number) {
+    this.mutations.resetWantlist();
     this.mutations.resetLoadDone();
     this.mutations.setLoadTotal(count);
     _.forIn(cards, (amount, cardname) => {
@@ -150,20 +181,19 @@ class RootActions extends Actions<RootState, RootGetters, RootMutations>() {
         this.mutations.addError(`Card "${cardname}" not found`);
       }
       response.forEach(data => {
-        if (!(data["store"] in this.state.shops)) {
+        let shop = _.find(this.state.shops, s => s.name === data["store"]);
+        if (shop == null) {
           this.mutations.addShop(data["store"], data["logo"]);
+          shop = this.state.shops[this.state.shops.length - 1];
         }
-        const shop = this.state.shops[data["store"]];
         const card = new Card(
-          shop,
           cardname,
-          data["stock"],
           data["price"],
           data["quality"],
           data["ref"],
           false
         ); //TODO foil
-        this.mutations.addCardToShop(shop, card);
+        this.mutations.addCardToShop(shop, card, data["stock"]);
       });
       this.mutations.setBestPrice(cardname);
     } catch (e) {

@@ -1,14 +1,6 @@
 <template>
   <div class="store-container">
-    <el-select v-model="selectedShop" placeholder="Filter Shops"
-          filterable auto-complete clearable>
-          <el-option
-            v-for="shop in shops"
-            :key="shop.name"
-            :label="shop.name"
-            :value="shop.name">
-          </el-option>
-        </el-select>
+    
     <div v-for="shop in filteredShops" :key="shop.name">
       <ShopView :shop="shop"></ShopView>
     </div>
@@ -28,24 +20,21 @@ export default class StoreList extends Vue {
 
   get filteredShops() {
     if (this.selectedShop != "") {
-      return [this.$store.state.shops[this.selectedShop]];
+      return [this.$store.state.shops.find(s => s.name == this.selectedShop)];
     }
-    let data: Array<Shop> = [];
-    let filter = this.$store.state.shopFilter;
-    /*
-    _.forIn(this.$store.state.shops, (shop: Shop) => {
-      const pos = _.sortedIndexBy(data, shop, "rating");
-      data.splice(pos, 0, shop);
-      if (filter in shop.cards) {
-        data.push(shop);
+    const filters = this.$store.state.filters;
+    return _.chain(this.$store.state.shops).filter(shop => {
+      if(filters.cardname != ""){
+        return shop.cards.some(shopCard => {
+          return shopCard.card.name === filters.cardname;
+        })
       }
-
-    });*/
-    return _.orderBy(
-      this.$store.state.shops,
-      ["rating", "name"],
-      ["desc", "asc"]
-    );
+      if(filters.shopname != ""){
+        return shop.name === filters.shopname;
+      }
+      return true;
+    }).orderBy(["rating", "name"],
+      ["desc", "asc"]).value();    
   }
 
   get shops() {
