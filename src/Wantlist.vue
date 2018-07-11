@@ -1,12 +1,14 @@
 <template>
     <div>
-        <div>{{`Cards wanted: ${cardsWanted}`}}</div>        
+        <div>{{`Cards wanted: ${cardsWanted}`}}</div>
         <div>
         <el-card v-for="data in wantlist" shadow="never" :key="data.name"
         v-bind:body-style="data.style">
         <div @click="setFilter(data.name)">
-            {{`${data.name} | ${data.amount} | ${data.bestPrice}`}}
-            <img :src="data.logo" width="100px" height="30px" />
+            {{`${data.name} | ${data.owned}/${data.wanted} | ${data.bestPrice}`}}
+            <div>
+              <img :src="data.logo" width="100px" height="30px" />
+            </div>
           </div>
         </el-card>
         </div>
@@ -22,13 +24,15 @@ export default class WantList extends Vue {
   get wantlist() {
     const wantlist = this.$store.state.wantlist;
     const data: Array<any> = [];
-    wantlist.missing.forEach(wantedCard => {
-      const best = this.$store.state.bestShop[wantedCard.name];
-      const bg = wantedCard.amount === 0 ? "#13ce66" : "";
+
+    wantlist.cards.forEach(card => {
+      const best = this.$store.state.bestShop[card.name];
+      const bg = card.isSatisfied ? "#13ce66" : "";
       let style = { cursor: "pointer", "background-color": bg };
       let entry = {
-        name: wantedCard.name,
-        amount: wantedCard.amount,
+        name: card.name,
+        owned: card.amountOwned,
+        wanted: card.amountWanted,
         bestPrice: formatter.format(best.price),
         logo: best.shop.logo,
         style: style
@@ -50,7 +54,7 @@ export default class WantList extends Vue {
   get cardsWanted() {
     return _.reduce(
       this.$store.state.wantlist.cards,
-      (result, card) => result + card.amount,
+      (result, card) => result + card.amountWanted,
       0
     );
   }

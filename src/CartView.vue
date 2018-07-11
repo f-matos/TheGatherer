@@ -13,12 +13,10 @@
             @row-click="rowClick">
             <el-table-column
                 prop="card.name"
-                label="Name"
-                width="100">
+                label="Name">
             </el-table-column>
             <el-table-column
-                label="Store"
-                width="110">
+                label="Store">
                 <template slot-scope="scope">
                     <img :src="scope.row.shop.logo" width="100px" height="30px" />
                     </template>
@@ -58,7 +56,6 @@ export default class CartView extends Vue {
       cart = this.$store.state.currentCart;
     }
     let shops = new Set();
-    let price = 0;
     let amount = 0;
     cart.items.forEach(item => {
       shops.add(item.shop);

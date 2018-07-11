@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <el-container>      
+    <el-container>
       <el-main>
       <div v-if="initial">
         <WantLoader></WantLoader>
@@ -15,17 +15,22 @@
           </el-header>
           <el-main>
           <el-row>
-            <el-col :span="4">
+            <el-col :span="2">
               <div style="max-height: 90vh;overflow-y:auto">
               <StoreList></StoreList>
               </div>
             </el-col>
-            <el-col :span="13">
+            <el-col :span="8">
               <div style="max-height: 90vh;overflow-y:auto">
               <CardList></CardList>
               </div>
             </el-col>
-            <el-col :span="7">
+            <el-col :span="10">
+              <div style="max-height: 90vh;overflow-y:auto">
+               <CartView></CartView>
+              </div>
+            </el-col>
+            <el-col :span="4">
               <div style="max-height: 90vh;overflow-y:auto">
                <WantList></WantList>
               </div>
@@ -36,12 +41,6 @@
           </el-main>
         </div>
       </div>
-      <el-dialog title="Cart"
-      :visible.sync="cartDialogVisible"
-      width="50%"
-      center>
-      <CartView></CartView>
-      </el-dialog>
       </el-main>
     </el-container>
   </div>

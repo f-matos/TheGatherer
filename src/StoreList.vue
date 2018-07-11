@@ -1,6 +1,6 @@
 <template>
   <div class="store-container">
-    
+
     <div v-for="shop in filteredShops" :key="shop.name">
       <ShopView :shop="shop"></ShopView>
     </div>
@@ -23,18 +23,20 @@ export default class StoreList extends Vue {
       return [this.$store.state.shops.find(s => s.name == this.selectedShop)];
     }
     const filters = this.$store.state.filters;
-    return _.chain(this.$store.state.shops).filter(shop => {
-      if(filters.cardname != ""){
-        return shop.cards.some(shopCard => {
-          return shopCard.card.name === filters.cardname;
-        })
-      }
-      if(filters.shopname != ""){
-        return shop.name === filters.shopname;
-      }
-      return true;
-    }).orderBy(["rating", "name"],
-      ["desc", "asc"]).value();    
+    return _.chain(this.$store.state.shops)
+      .filter(shop => {
+        if (filters.cardname != "") {
+          return shop.cards.some(shopCard => {
+            return shopCard.card.name === filters.cardname;
+          });
+        }
+        if (filters.shopname != "") {
+          return shop.name === filters.shopname;
+        }
+        return true;
+      })
+      .orderBy(["rating", "name"], ["desc", "asc"])
+      .value();
   }
 
   get shops() {

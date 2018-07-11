@@ -49,6 +49,7 @@ def get_data(card):
                 "price": price,
                 "stock": stock,
                 "quality": store.find('div', {'class': 'e-col4'}).get_text()
+                "extras": store.find('div', { 'class': 'extras'}).get_text()
             })
             #print((store_string, price))
     except AttributeError as e:
@@ -62,8 +63,8 @@ with open("data.json") as f:
 
 @app.route('/api/<card>', methods=['GET'])
 def req_card(card):
-    return jsonify(offline[card])
-    # return jsonify(get_data(card))
+    #return jsonify(offline[card])
+    return jsonify(get_data(card))
 
 
 @app.route('/')

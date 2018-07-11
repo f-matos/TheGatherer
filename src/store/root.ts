@@ -2,8 +2,15 @@ import _ from "lodash";
 import axios from "axios";
 import Vue from "vue";
 import { store, module, Getters, Mutations, Actions } from "sinai";
-import { Shop, Card, Cart, Wantlist, ShopCard, CartCard, WantlistCard } from "@/models";
-
+import {
+  Shop,
+  Card,
+  Cart,
+  Wantlist,
+  ShopCard,
+  CartCard,
+  WantlistCard,
+} from "@/models";
 
 // Declare the moimport Shop from '@/models/Shop';
 //dule state and its initial value
@@ -23,10 +30,10 @@ class RootState {
     cardname: "",
     shopname: "",
     maxPrice: Infinity,
-    minPrice: 0
-  }
+    minPrice: 0,
+  };
 
-  wantlist: Wantlist = { cards: [], missing: [] };
+  wantlist: Wantlist = { cards: [] };
 
   shopFilter: string = "";
 
@@ -36,7 +43,7 @@ class RootState {
 // Declare mutations
 class RootMutations extends Mutations<RootState>() {
   addShop(shopName: string, logo: string) {
-    const shop = new Shop(shopName, logo)
+    const shop = new Shop(shopName, logo);
     this.state.shops.push(shop);
   }
 
@@ -49,7 +56,7 @@ class RootMutations extends Mutations<RootState>() {
   }
 
   addCardToShop(shop: Shop, card: Card, stock: number) {
-    shop.cards.push(new ShopCard(card, stock))
+    shop.cards.push(new ShopCard(card, stock));
   }
 
   setBestPrice(cardname: string) {

@@ -6,7 +6,7 @@
         </div>
     <div v-for="shopCard in shopCards" :key="shopCard.card.id">
         <el-button class="card-button" @click="addCard(shopCard)"
-        :type="cardColor(shopCard)" >
+        :style="cardStyle(shopCard)" >
             {{ `${shopCard.card.name} (${shopCard.stock}) ${shopCard.card.money} ${shopCard.card.quality}` }}
         </el-button>
     </div>
@@ -24,9 +24,15 @@ export default class CardList extends Vue {
       return [];
     }
     const filters = this.$store.state.filters;
-    return _.chain(this.$store.state.currentShop.cards).filter(shopCard => {
-      return shopCard.card.price <= filters.maxPrice && shopCard.card.price >= filters.minPrice
-    }).orderBy(o => o.card.name).value()    
+    return _.chain(this.$store.state.currentShop.cards)
+      .filter(shopCard => {
+        return (
+          shopCard.card.price <= filters.maxPrice &&
+          shopCard.card.price >= filters.minPrice
+        );
+      })
+      .orderBy(o => o.card.name)
+      .value();
   }
 
   get store() {
@@ -37,17 +43,17 @@ export default class CardList extends Vue {
     this.$store.mutations.addItemToCart(shopCard.card);
   }
 
-  cardColor(shopCard: ShopCard) {
+  cardStyle(shopCard: ShopCard) {
     const cart = this.$store.state.currentCart;
-    const isMissing = this.$store.state.wantlist.missing.forEach(missing => {
-      if (missing.name == shopCard.card.name) {
-        if (missing.amount > 0) {
-          return true;
+    const isMissing = this.$store.state.wantlist.cards.every(wantedCard => {
+      if (wantedCard.name == shopCard.card.name) {
+        if (wantedCard.isSatisfied) {
+          return false;
         }
       }
-      return false;
+      return true;
     });
-    return isMissing ? "info" : "";
+    return isMissing ? "" : `text-decoration:line-through;`;
   }
 }
 </script>
