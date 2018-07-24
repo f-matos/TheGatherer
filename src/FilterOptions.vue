@@ -15,17 +15,17 @@
                                 </el-option>
                             </el-select>                            
                             <el-col :span="12">
-                            <el-input v-model="maxPrice">
-                                <template slot="prepend">Preço Máximo</template>
-                            </el-input>
-                            </el-col>
-                        </div>
-                        <div>
-                            <el-col :span="12">
                             <el-input v-model="minPrice">
                                 <template slot="prepend">Preço Mínimo</template>
                             </el-input>            
                             </el-col>
+                        </div>
+                        <div>
+                            <el-col :span="12">
+                            <el-input v-model="maxPrice">
+                                <template slot="prepend">Preço Máximo</template>
+                            </el-input>
+                            </el-col>                    
                             <el-select v-model="cardname" placeholder="Filtrar carta"
                                 filterable auto-complete clearable>
                                 <el-option
