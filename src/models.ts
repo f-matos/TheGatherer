@@ -187,7 +187,7 @@ export class Cart {
   }
 
   get price() {
-    return _.reduce(this.items, (result, item) => result + item.price, 0);
+    return _.reduce(this.items, (result, item) => result + (item.price * item.amount), 0);
   }
 
   get money() {

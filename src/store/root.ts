@@ -114,17 +114,19 @@ class RootMutations extends Mutations<RootState>() {
     this.state.filters.shopname = name;
   }
 
-  setMaxPrice(value: number) {
-    if (_.isNaN(value)) {
+  setMaxPrice(value: string) {
+    value = value.replace(',', '.')
+    if (value === '' || _.isNaN(value)) {
       this.state.filters.maxPrice = Infinity;
     } else {
       this.state.filters.maxPrice = value;
     }
   }
 
-  setMinPrice(value: number) {
-    if (_.isNaN(value)) {
-      this.state.filters.minPrice = 0;
+  setMinPrice(value: string) {
+    value = value.replace(',', '.')
+    if (value === '' || _.isNaN(value)) {
+      this.state.filters.minPrice = '';
     } else {
       this.state.filters.minPrice = value;
     }

@@ -49,16 +49,12 @@ def get_data(card):
                 "price": price,
                 "stock": stock,
                 "quality": store.find('div', {'class': 'e-col4'}).get_text()
-                "extras": store.find('div', { 'class': 'extras'}).get_text()
             })
             #print((store_string, price))
     except AttributeError as e:
         print(card, e)
     return result
 
-
-with open("data.json") as f:
-    offline = json.loads(f.read())
 
 
 @app.route('/api/<card>', methods=['GET'])
@@ -79,6 +75,6 @@ def send_raw(path):
 
 if __name__ == "__main__":
     #url = "http://{}:{}".format(os.getenv('FLASK_RUN_HOST'), os.getenv('FLASK_RUN_PORT'))
-    # webbrowser.open(url)
+    #webbrowser.open(url)
     #app.run(host=os.getenv('FLASK_RUN_HOST'), port=os.getenv('FLASK_RUN_PORT'))
     app.run()

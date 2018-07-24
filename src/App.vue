@@ -10,9 +10,7 @@
           <Loading></Loading>
         </div>
         <div v-else>
-          <el-header>
             <FilterOptions></FilterOptions>
-          </el-header>
           <el-main>
           <el-row>
             <el-col :span="2">
